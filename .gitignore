@@ -1,3 +1,6 @@
 ObjectHuntBackEnd/node_modules
 ObjectHuntBackEnd/cert.pem
 ObjectHuntBackEnd/key.pem
+docker-webrtc-google/build
+docker-webrtc-google/taskbit.crt
+docker-webrtc-google/taskbit.key
