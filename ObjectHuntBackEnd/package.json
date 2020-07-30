@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpileOnly ./src/server.ts",
-    "prod": "tsc && node ./dist/server.js"
+    "prod": "tsc"
   },
   "dependencies": {
     "@types/uuid": "^8.0.0",

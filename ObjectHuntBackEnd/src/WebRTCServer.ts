@@ -20,6 +20,7 @@ export class WebRTCServer {
     this.wss = new WebSocket.Server({ server: webServer.getHttpsServer() });
 
     this.wss.on(socketEvents.CONNECTION, (ws: WebSocket) => {
+      console.log('on connection');
       const broadcast = (room: Room, data: any) => {
         this.wss.clients.forEach(client => {
           if(room === client.room && client.user.getId() !== ws.user.getId() && client.readyState === WebSocket.OPEN){
@@ -36,6 +37,7 @@ export class WebRTCServer {
       }
 
       ws.on(socketEvents.MESSAGE, (data: any) => {
+        console.log('on message');
         let obj: IMessage = JSON.parse(data);
 
         switch(obj.eventName){
@@ -43,7 +45,7 @@ export class WebRTCServer {
             let user: User = this.setupUser(ws, obj.data);
             ws.user = user;
             let users: object[] = [];
-            
+
             [...user.getRoom().getUsers()].forEach(user => {
               let currentUser = {
                 username: user.getName(),
@@ -85,7 +87,7 @@ export class WebRTCServer {
             break;
           case socketEvents.P2PACTION:
             broadcast(ws.room, JSON.stringify(obj));
-            break; 
+            break;
           case FindObjectEvents.START:
             let foGame: FindObject = new FindObject();
             foGame.setupGame(ws);
@@ -119,9 +121,13 @@ export class WebRTCServer {
             console.log("default");
             break;
         }
-      });      
-      ws.on(socketEvents.ERROR, () => ws.terminate());
+      });
+      ws.on(socketEvents.ERROR, (e) => {
+        console.log('socket error ', e);
+        ws.terminate();
+      });
       ws.on(socketEvents.CLOSE, ()=>{
+        console.log('socket close');
         let user: User | undefined;
         if(typeof ws.room === "undefined"){
           return;
@@ -136,7 +142,7 @@ export class WebRTCServer {
             ws.room.getUsers()[0].setRole(ROLES[0]);
             newHost = ws.room.getUsers()[0];
           }
-  
+
           //alert users for disconnect
           let newHostData;
           if(typeof newHost !== "undefined"){
@@ -144,7 +150,7 @@ export class WebRTCServer {
               uuid: newHost.getId()
             }
           }
-  
+
           let data = {
             eventName: socketEvents.USER_DISCONNECT,
             data:{
@@ -154,10 +160,10 @@ export class WebRTCServer {
               newHost: newHostData
             }
           }
-          broadcast(ws.room, JSON.stringify(data))  
+          broadcast(ws.room, JSON.stringify(data))
         }
       })
-    });    
+    });
   }
 
   setupUser = (ws: WebSocket, data: ISetupUser) => {

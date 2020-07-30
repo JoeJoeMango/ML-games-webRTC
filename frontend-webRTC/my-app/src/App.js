@@ -6,11 +6,11 @@ import "./App.css";
 import VideoFeed from "./components/VideoFeed";
 import logo from './logo.png'; // with import
 // eslint-disable-next-line
-import * as tf from '@tensorflow/tfjs'; 
+import * as tf from '@tensorflow/tfjs';
 import * as cocoSsd  from '@tensorflow-models/coco-ssd';
 
 
-class App extends Component {  
+class App extends Component {
   constructor(props){
     super(props);
     this.localVideoRef = React.createRef();
@@ -25,13 +25,13 @@ class App extends Component {
     };
     this.model = '';
 
-    this.client = new W3CWebSocket('wss://taskbit.net:8443');
+    this.client = new W3CWebSocket('wss://object-hunt.labs.mediamonks.com/ws');
 
     this.sendPrediction = false;
     this.hasStream = [];
   }
   componentWillMount(){
-      let hash = window.location.hash.replace("#",'');   
+      let hash = window.location.hash.replace("#",'');
       if(hash.split("=")[0] === "roomId"){
         let me = this.state.me;
         me.roomId = hash.split("=")[1];
@@ -77,7 +77,7 @@ class App extends Component {
     audio: true,
   };
 
-  
+
   updateWord = (word) => {
     let currentGame = this.state.game;
     currentGame.gameData.word = word;
@@ -101,7 +101,7 @@ class App extends Component {
     let player = players.find((player)=>{
       return (player.id === obj.data.user.uuid);
     })
-    
+
     this.setState({notification: `${player.name} wins`});
     player.score = obj.data.user.score;
     if(player.score < 10){
@@ -136,7 +136,7 @@ class App extends Component {
     };
     this.addUser(userAdd);
   }
-  
+
   onUserDisconnect = (obj) =>{
     if(typeof obj.data.newHost !== 'undefined'){
       if(obj.data.newHost.uuid === this.state.me.uuid){
@@ -157,7 +157,7 @@ class App extends Component {
       notification: `${obj.data.user.username} won`
     });
 
-    
+
   }
   onFOUpdateData = (obj) =>{
     let currentGame = this.state.game;
@@ -182,7 +182,7 @@ class App extends Component {
     });
     this.setState({players: players});
   }
-  
+
   componentDidMount(){
     this.client.onopen = () => {
       console.log('WebSocket Client Connected');
@@ -215,7 +215,7 @@ class App extends Component {
               score: element.score,
             };
             this.addUser(userAdd);
-          });    
+          });
           break;
         case 'FOStart':
           this.onFOStart(obj);
@@ -237,10 +237,10 @@ class App extends Component {
           break;
         case 'p2pAction':
             var peerUuid = obj.data.uuid;
-            if (peerUuid === this.state.me.uuid || (obj.data.dest !== this.state.me.uuid && obj.data.dest !== "all")){ 
+            if (peerUuid === this.state.me.uuid || (obj.data.dest !== this.state.me.uuid && obj.data.dest !== "all")){
               break;
             }
-            
+
             if (obj.data.displayName && obj.data.dest === "all") {
               // set up peer connection object for a newcomer peer
               this.setUpPeer(peerUuid, obj.data.displayName);
@@ -274,8 +274,8 @@ class App extends Component {
               this.peerConnections[peerUuid].pc
                 .addIceCandidate(new RTCIceCandidate(obj.data.ice))
                 .catch(this.errorHandler);
-            }    
-            break;      
+            }
+            break;
         default:
           break;
       }
@@ -283,7 +283,7 @@ class App extends Component {
     this.predict();
 
   }
-  
+
   predict = async ()=>{
     if(this.state.game.status && this.sendPrediction){
 
@@ -308,7 +308,7 @@ class App extends Component {
         }
         requestAnimationFrame(this.predict);
     });
-    
+
     }else{
       requestAnimationFrame(this.predict);
     }
@@ -317,18 +317,18 @@ class App extends Component {
   gotIceCandidate = (event, peerUuid) =>{
     if (event.candidate != null) {
       this.client.send(
-        JSON.stringify({ 
+        JSON.stringify({
           eventName:'p2pAction',
           data:{
-            ice: event.candidate, 
-            uuid: this.state.me.uuid, 
+            ice: event.candidate,
+            uuid: this.state.me.uuid,
             dest: peerUuid
-          } 
+          }
         })
       );
     }
   }
-  
+
   setUpPeer = (peerUuid, displayName, initCall = false) => {
     this.peerConnections[peerUuid] = {
       displayName: displayName,
@@ -341,7 +341,7 @@ class App extends Component {
     this.peerConnections[peerUuid].pc.oniceconnectionstatechange = (event) =>
       this.checkPeerDisconnect(event, peerUuid);
     this.peerConnections[peerUuid].pc.addStream(this.localStream);
-  
+
     if (initCall) {
       this.peerConnections[peerUuid].pc
         .createOffer()
@@ -353,7 +353,7 @@ class App extends Component {
   errorHandler = (err) =>{
     console.log(err);
   }
-  
+
   checkPeerDisconnect = (event, peerUuid)=> {
     var states = this.peerConnections[peerUuid].pc.iceConnectionState;
     console.log(`connection with peer ${peerUuid} ${states}`);
@@ -368,7 +368,7 @@ class App extends Component {
       // updateLayout();
     }
   }
-  
+
   connectToSocket = () => {
     const {me} = this.state;
     let data = {
@@ -378,7 +378,7 @@ class App extends Component {
         displayName: me.username,
       }
     };
-    this.client.send(JSON.stringify(data));  
+    this.client.send(JSON.stringify(data));
   }
 
   gotRemoteStream = (event, peerUuid) => {
@@ -395,7 +395,7 @@ class App extends Component {
   }
 
 }
-  
+
 
   onLogin = (e) => {
     const {me} = this.state;
@@ -515,7 +515,7 @@ To start playing, please input your name and press enter. Once you enter the roo
                   <button className="startGame-btn" onClick={this.startGame}>START</button>
               </div>
           }
-          <button style={{position:'absolute', bottom: 0}} onClick={()=>{navigator.clipboard.writeText(`https://taskbit.net/#roomId=${this.state.me.roomId}`)}}>COPY LINK</button>
+          <button style={{position:'absolute', bottom: 0}} onClick={()=>{navigator.clipboard.writeText(`https://object-hunt.labs.mediamonks.com/#roomId=${this.state.me.roomId}`)}}>COPY LINK</button>
         </div>
 
       </div>;
